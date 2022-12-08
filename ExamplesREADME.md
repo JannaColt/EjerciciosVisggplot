@@ -153,8 +153,117 @@ ggplot(faithful, aes(x=eruptions, y=waiting)) + geom_point()
 
 ggplot(diamonds, aes(x=depth)) + geom_histogram(binwidth=0.1)
 
+g <- ggplot(mpg, aes(class)) + geom_bar()
+g + geom_bar(aes(fill = manufacturer))
+
+ ggplot(diamonds, aes(cut, price)) + geom_boxplot()
+ 
+ggplot(diamonds, aes(carat, price)) + geom_point() 
+
+ggplot(diamonds, aes(carat, price)) + geom_point(alpha=1/3) 
+
+ggplot(mtcars, aes(mpg, wt)) + geom_point() + geom_line(color="blue")
+
+ggplot(mtcars, aes(mpg, wt)) + geom_point() + geom_path(color="blue")
+
+ggplot(mtcars, aes(wt, mpg)) + geom_point() + geom_path(color="blue")
+
+
+```
+¿Cómo cambia Hwy frente a la clase en el df mpg?
+¿En estas clases como se ve el tipo drv?
+¿Cual sería la media?
+
+```R
+ggplot(mpg, aes(class, hwy)) + geom_boxplot()
+ggplot(mpg, aes(class, hwy, fill = drv)) + geom_boxplot()
+ggplot(mpg, aes(class, hwy, fill = drv)) + geom_boxplot() + geom_point()
+
+```
+#### Geoms colectivos, múltiples grupos en un objeto geom y en múltiples capas
+
+Usando los geom colectivos, usualmente cuando el default no funciona, tenemos que definir exactamente los grupos. Nos sirve además cuando necesitamos que se desplieguen 
+otros elementos como estadísticos en el mismo objeto geométrico
+
+```R
+library(nlme) # Si el paquete no esta, hay que instalarlo primero
+View(Oxboys)
+ggplot(Oxboys, aes(age, height)) + geom_point() +
++     geom_line()
+
+```
+Debido a la estructura de los datos (observaciones longitudinales, un sujeto a través de diferentes tiempos, las líneas quedan sin sentido alguno, para resolver la 
+visualización hay que definir el grupo, en el caso de este dataset sería dependiendo del sujeto
+
+```R
+ggplot(Oxboys, aes(age, height, group = Subject)) + geom_point() +
++     geom_line()
+```
+Si un grupo no se encuentra definido por una sola variable, si no por múltiples variables se usa *interaction* (dentro del aes *Group*).
+
+En otras ocasiones queremos graficar resúmenes a diferentes grados de agregación (usualmente estos son estadísticos o modelos), por ejemplo si en el gráfico anterior queremos observar tendencia lineal, podemos agregar una línea. Para ello usamos otro **Geom**, denominado *geom_smooth*.
+
+```R
+ggplot(Oxboys, aes(age, height, group = Subject)) + geom_line() + geom_point() +
+geom_smooth(method = "lm", se = FALSE)
+```
+Lo anterior agrega una línea ajustada a cada uno de los sujetos, sin embargo, queremos una línea de tendencia para todas las líneas.
+
+```R
+ggplot(Oxboys, aes(age, height)) + geom_line(aes(group = Subject)) + geom_point() +
++     geom_smooth(method = "lm", se = TRUE)
 ```
 
+
+Cuando tratamos con múltiples estéticas tenemos que considerar algunos puntos, para el caso de líneas y paths se aplica la estética por segmentos
+
+```R
+df <- data.frame(x = 1:3, y = 1:3, colour = c(1,3,5))
+
+ggplot(df, aes(x, y, colour = factor(colour))) + geom_line(aes(group = 1), size = 2) + geom_point(size = 5)
+ggplot(df, aes(x, y, colour = colour)) + geom_line(aes(group = 1), size = 2) + geom_point(size = 5)
+
+```
+se puede hacer la transición más suave pero no es de manera sencilla y se puede hacer manualmente. No funciona para variables discretas y no es común usarlo
+
+```R
+#Con el data frame anterior:
+#Establecemos un grid de longitud 50 en el intérvalo de 1 a 3
+xgrid <- with(df, seq(min(x), max(x), length = 50)) 
+interp <- data.frame(
+    x = xgrid,
+    y = approx(df$x, df$y, xout = xgrid)$y,
+    colour = approx(df$x, df$colour, xout = xgrid)$y
+)
+interp
+
+ggplot(interp, aes(x, y, colour = colour)) +
+    geom_line(size = 2) + geom_point(data = df, size = 5)
+```
+
+En caso de otros geom colectivos como el geom_polygon, se aplica un valor default cuando son variables continuas, en el caso de ser discretas, se dividen por default
+
+```R
+ggplot(mpg, aes(class)) + geom_bar()
+ggplot(mpg, aes(class, fill = drv)) + geom_bar()
+```
+Si creamos un boxplot de hwy por cada cyl, sin convertir cyl en un factor, ¿Qué aes necesitamos establecer?
+
+```R
+ggplot(mpg, aes(cyl, hwy)) + geom_boxplot()
+
+```
+Respuesta: 
+
+```R
+ggplot(mpg, aes(cyl, hwy, group=cyl)) + geom_boxplot()
+```
+
+¿Que habría que modificar en la siguiente gráfica?
+
+```R
+ggplot(mpg, aes(displ, cty)) + geom_boxplot()
+```
 
 
 
