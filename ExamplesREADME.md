@@ -265,7 +265,40 @@ ggplot(mpg, aes(cyl, hwy, group=cyl)) + geom_boxplot()
 ggplot(mpg, aes(displ, cty)) + geom_boxplot()
 ```
 
+### Otros gráficos y estadísticos
 
+#### Gráficos de superficie 
+Aunque ggplot2 no cuenta con herramientas para graficar en 3D, si cuenta con algunas herramientas para representarlas en 2D, para ello tenemos los geoms de *Contour*
+y *raster*, además de gráficos de burbuja usando el geom_point.
+
+```R
+
+View(faithfuld)
+ggplot(faithfuld, aes(eruptions, waiting)) + geom_contour(aes(z = density, colour = ..level..))
+```
+```R
+ggplot(faithfuld, aes(eruptions, waiting)) + geom_raster(aes(fill = density))
+```
+
+#### Mapas
+
+Grafiquemos a México
+```R
+install.packages("maps")
+data("worldMapEnv")
+mi_ciudad<- map_data("world", "Mexico") %>% select(long, lat, group, id = subregion)
+ggplot(mi_ciudad, aes(long, lat)) + geom_polygon(aes(group = group)) + coord_quickmap()
+```
+
+En el database de maps no se encuentra dividido por lo que no es posible el argumento group en un objeto no agrupado, pero en el caso de los estados en USA si es posible
+
+```R
+mi_counties <- map_data("county", "louisiana") %>% select(lon = long, lat, group, id = subregion)
+head(mi_counties)
+ggplot(mi_counties, aes(lon, lat)) + geom_polygon(aes(group = group)) + coord_quickmap()
+ggplot(mi_counties, aes(lon, lat)) +
++     geom_polygon(aes(group = group), fill = NA, colour = "grey50") + coord_quickmap()
+```
 
 Formato amplio (usando solo ggplot2)
 ```R
