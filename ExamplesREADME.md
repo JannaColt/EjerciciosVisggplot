@@ -300,6 +300,111 @@ ggplot(mi_counties, aes(lon, lat)) +
 +     geom_polygon(aes(group = group), fill = NA, colour = "grey50") + coord_quickmap()
 ```
 
+#### Estadísticos
+
+Ggplot2 cuenta con una familia de geoms especificos para colocar barras de error, como hay muchas formas de calcular dichos errores, la forma en la que se haga depende de nosotros. Incluso hay formas de calcular dependiendo de modelos más complicados por lo que el hacerlo depende totalmente de tus datos.
+
+```R
+y <- c(18, 11, 16)
+df <- data.frame(x = 1:3, y = y, se = c(1.2, 0.5, 1.0)) 
+
+base <- ggplot(df, aes(x, y, ymin = y - se, ymax = y + se)) 
+
+base + geom_crossbar()
+
+base + geom_pointrange()
+
+base + geom_smooth(stat = "identity") 
+
+base + geom_errorbar() 
+
+base + geom_linerange() 
+
+base + geom_ribbon() 
+```
+
+Además ggplot cuenta con herramientas para datos ponderados, donde estos tienen sentido: ajustes, regresiones, boxplots, histogramas y gráficos de densidad
+
+```R
+
+# Sin ponderar
+ggplot(midwest, aes(percwhite, percbelowpoverty)) + geom_point()
+
+# Ponderado por población
+ggplot(midwest, aes(percwhite, percbelowpoverty)) 
++ geom_point(aes(size = poptotal / 1e6)) 
++ scale_size_area("Population\n(millions)", breaks = c(0.5, 1, 2, 4))
+```
+Otra forma más complicada de presentar las ponderaciones involucra transformación estadística
+
+```R
+# Sin ponderar
+ggplot(midwest, aes(percwhite, percbelowpoverty)) + geom_point() +
+geom_smooth(method = lm, size = 1)
+# Ponderada por población
+ggplot(midwest, aes(percwhite, percbelowpoverty)) + geom_point(aes(size = poptotal / 1e6)) + geom_smooth(aes(weight = poptotal), method = lm, size = 1) + scale_size_area(guide = "none")
+```
+
+Por otro lado, al trabajar con distribuciones se cuentan con varias opciones, modificar el ancho de los bin o su número, así como usar otras herramientas
+
+```R
+ggplot(diamonds, aes(depth)) +
+geom_freqpoly(aes(colour = cut), binwidth = 0.1, na.rm = TRUE) + xlim(58, 68) +
+theme(legend.position = "none")
+
+ggplot(diamonds, aes(depth)) +
+geom_histogram(aes(fill = cut), binwidth = 0.1, position = "fill",
+na.rm = TRUE) +
+xlim(58, 68) + theme(legend.position = "none")
+
+ggplot(diamonds, aes(depth)) + geom_density(na.rm = TRUE) + xlim(58, 68) + theme(legend.position = "none")
+
+ggplot(diamonds, aes(depth, fill = cut, colour = cut)) + geom_density(alpha = 0.2, na.rm = TRUE) +
+xlim(58, 68) +
+theme(legend.position = "none")
+```
+Aunque los histogramas y poligonos de frecuencias muestran detalladamente distribuciones, también se cuentan con opciones para comparar múltiples distribuciones sacrificando calidad por cantidad:
+
+```R
+ggplot(diamonds, aes(clarity, depth)) + geom_boxplot()
+
+ggplot(diamonds, aes(carat, depth)) + geom_boxplot(aes(group = cut_width(carat, 0.1))) + xlim(NA, 2.05)
+
+ggplot(diamonds, aes(clarity, depth)) + geom_violin()
+
+ggplot(diamonds, aes(carat, depth)) + geom_violin(aes(group = cut_width(carat, 0.1))) + xlim(NA, 2.05)
+```
+
+
+Trabajando con grandes datasets:
+
+```R
+df <- data.frame(x = rnorm(2000), y = rnorm(2000))
+norm <- ggplot(df, aes(x, y)) + xlab(NULL) + ylab(NULL) norm + geom_point()
+norm + geom_point(shape = 1) # Círculos vacíos
+norm + geom_point(shape = ".") # tamaño pixel
+
+#Modificar transparencias
+norm + geom_point(alpha = 1 / 3) norm + geom_point(alpha = 1 / 5) norm + geom_point(alpha = 1 / 10)
+
+#Unir puntos
+norm + geom_bin2d()
+norm + geom_bin2d(bins = 10)
+
+#Bins hexagonales
+norm + geom_hex()
+norm + geom_hex(bins = 10)
+```
+otra forma de solventar la gran cantidad de datos es usar *summaries* estadísticos:
+
+```R
+ggplot(diamonds, aes(table, depth)) + geom_bin2d(binwidth = 1, na.rm = TRUE) + xlim(50, 70) +
+ylim(50, 70)
+3.14 Add-on Packages 73
+ggplot(diamonds, aes(table, depth, z = price)) + geom_raster(binwidth = 1, stat = "summary_2d", fun = mean,
+na.rm = TRUE) + xlim(50, 70) + ylim(50, 70)
+```
+
 Formato amplio (usando solo ggplot2)
 ```R
 ggplot(mtcars,
