@@ -374,7 +374,20 @@ ggplot(diamonds, aes(clarity, depth)) + geom_violin()
 
 ggplot(diamonds, aes(carat, depth)) + geom_violin(aes(group = cut_width(carat, 0.1))) + xlim(NA, 2.05)
 ```
+Ejercicio
 
+```R
+ggplot(diamonds, aes(price)) + geom_histogram()
+# ggplot(diamonds, aes(price)) + geom_histogram(binwidth = ??)
+# ggplot(diamonds, aes(price)) + geom_histogram(binwidth = ??, na.rm = TRUE) + facet_wrap(~clarity)
+# ggplot(diamonds, aes(price, color=??)) + geom_density()
+# ggplot(diamonds, aes(price)) + geom_freqpoly(aes(colour = ??),  binwidth = ??, na.rm = TRUE)
+# ggplot(diamonds, aes(price)) + geom_histogram(aes(fill = ???), binwidth = ???, position = "fill", na.rm = TRUE)
+# ggplot(diamonds, aes(???, ???)) + geom_boxplot(aes(colour = ???), na.rm = TRUE)
+# ggplot(diamonds, aes(x=clarity, y=price, fill= clarity)) + geom_dotplot(binaxis='y', stackdir='center', stackratio=.01, dotsize=.5, binwidth = 300)
+# ggplot(diamonds, aes(clarity, price)) + geom_violin()
+
+```
 
 Trabajando con grandes datasets:
 
@@ -387,7 +400,7 @@ norm + geom_point(shape = ".") # tamaño pixel
 #Modificar transparencias
 norm + geom_point(alpha = 1 / 3) norm + geom_point(alpha = 1 / 5) norm + geom_point(alpha = 1 / 10)
 
-#Unir puntos
+#agrupar puntos
 norm + geom_bin2d()
 norm + geom_bin2d(bins = 10)
 
@@ -395,15 +408,24 @@ norm + geom_bin2d(bins = 10)
 norm + geom_hex()
 norm + geom_hex(bins = 10)
 ```
-otra forma de solventar la gran cantidad de datos es usar *summaries* estadísticos:
+otra forma de solventar la gran cantidad de datos es usar *summaries* estadísticos, los cuales puden ser de distintos tipos:
 
 ```R
+# Valores de summary por defecto stat_bin
+ggplot(diamonds, aes(color)) + geom_bar()
+
+#se usa stat_summary_bin para definir la transformación estadística
+ggplot(diamonds, aes(color, price)) + geom_bar(stat = "summary_bin", fun.y = mean)
+
 ggplot(diamonds, aes(table, depth)) + geom_bin2d(binwidth = 1, na.rm = TRUE) + xlim(50, 70) +
 ylim(50, 70)
-3.14 Add-on Packages 73
+
 ggplot(diamonds, aes(table, depth, z = price)) + geom_raster(binwidth = 1, stat = "summary_2d", fun = mean,
 na.rm = TRUE) + xlim(50, 70) + ylim(50, 70)
 ```
+
+
+
 
 Formato amplio (usando solo ggplot2)
 ```R
