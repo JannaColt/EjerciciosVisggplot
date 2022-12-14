@@ -408,7 +408,7 @@ norm + geom_bin2d(bins = 10)
 norm + geom_hex()
 norm + geom_hex(bins = 10)
 ```
-otra forma de solventar la gran cantidad de datos es usar *summaries* estadísticos, los cuales puden ser de distintos tipos:
+otra forma de solventar la gran cantidad de datos es usar *summaries* estadísticos, los cuales puden ser de distintos tipos según lo que requieras:
 
 ```R
 # Valores de summary por defecto stat_bin
@@ -423,8 +423,50 @@ ylim(50, 70)
 ggplot(diamonds, aes(table, depth, z = price)) + geom_raster(binwidth = 1, stat = "summary_2d", fun = mean,
 na.rm = TRUE) + xlim(50, 70) + ylim(50, 70)
 ```
+Ejercicio de gramática
+
+```R
+# Ej <- ggplot(mpg, aes(x, y, color= ???)) + geom_???()
+
+# Podemos crear cualquier gráfico en tanto se siga la gramática, aunque dichos gráficos no tengan sentido
+ggplot(mpg, aes(displ, hwy, colour = factor(cyl))) + geom_line() +
+theme(legend.position = "none")
+
+ggplot(mpg, aes(displ, hwy, colour = factor(cyl))) + geom_bar(stat = "identity", position = "identity", fill = NA) + theme(legend.position = "none")
+
+# Ej + geom_smooth(method = "lm")
+
+```
+
+```math
+
+Z_{j} = (x_{i} - min(x)) / (max(x) - min(x))
+
+```
 
 
+
+Extra: Graficando la rueda de colores (los valores por defecto se seleccionan de manera igualmente espaciada)  
+
+```R
+r  <- seq(0,1,length=201)
+th <- seq(0,2*pi, length=201)
+d  <- expand.grid(r=r,th=th)
+gg <- with(d,data.frame(d,x=r*sin(th),y=r*cos(th),
++                         z=hcl(h=360*th/(2*pi),c=100*r, l=65)))
+ggplot(gg) +
++     geom_point(aes(x,y, color=z), size=3)+
++     scale_color_identity()+labs(x="",y="") +
++     coord_fixed()
+```
+
+
+Podemos crear gráficos más complejos, incluyendo varios geom
+
+```R
+# Ej + geom_point() +
+geom_smooth() + facet_wrap(~????) 
+```
 
 
 Formato amplio (usando solo ggplot2)
