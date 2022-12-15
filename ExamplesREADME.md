@@ -437,14 +437,12 @@ ggplot(mpg, aes(displ, hwy, colour = factor(cyl))) + geom_bar(stat = "identity",
 # Ej + geom_smooth(method = "lm")
 
 ```
-
+Fórmula de normalización del *grid*
 ```math
 
 Z_{j} = (x_{i} - min(x)) / (max(x) - min(x))
 
 ```
-
-
 
 Extra: Graficando la rueda de colores (los valores por defecto se seleccionan de manera igualmente espaciada)  
 
@@ -467,6 +465,58 @@ Podemos crear gráficos más complejos, incluyendo varios geom
 # Ej + geom_point() +
 geom_smooth() + facet_wrap(~????) 
 ```
+
+Ejercicio: curva de calibración de azúcares reductores
+| Glucosa (g/l)| abs |
+| ----- | ---- |
+| 0.0 | 0 |
+| 0.2 | 0.0561 |
+| 0.4 | 0.1629 |
+| 0.6 | 0.2564 |
+| 0.8 | 0.353 |
+| 1.0 | 0.4532 |
+| 1.2 | 0.5544 |
+
+
+Ejercicio: Para Iris, determina la relación entre longitud de pétalo y sépalo, agrupa por especies usando 1. colores y 2. facet, y ajusta los datos usando regresión 
+lineal
+
+```R
+#1. por color
+#ggplot(iris, aes(x, y, color = ???)) +
+       geom_???() +
+       geom_???(???)
+       
+#2. Facets       
+#ggplot(iris, aes(Sepal.Length, Petal.Length)) + geom_??() + geom_???(???) + facet_wrap(~?)
+
+
+```
+Etiquetas y Anotaciones 
+
+```R
+#family
+df <- data.frame(x = 1, y = 3:1, family = c("sans", "serif", "mono")) ggplot(df, aes(x, y)) +
+geom_text(aes(label = family, family = family))
+
+#apariencia
+df <- data.frame(x = 1, y = 3:1, face = c("plain", "bold", "italic")) ggplot(df, aes(x, y)) +
+geom_text(aes(label = face, fontface = face))
+
+#alineamiento
+df <- data.frame(
+x = c(1, 1, 2, 2, 1.5), y = c(1, 2, 1, 2, 1.5), text = c(
+"bottom-left", "bottom-right",
+"top-left", "top-right", "center" )
+)
+ggplot(df, aes(x, y)) +
+geom_text(aes(label = text)) ggplot(df, aes(x, y)) +
+geom_text(aes(label = text), vjust = "inward", hjust = "inward")
+
+#
+
+```
+
 
 
 Formato amplio (usando solo ggplot2)
