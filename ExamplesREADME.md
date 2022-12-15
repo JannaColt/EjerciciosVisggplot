@@ -745,6 +745,102 @@ geom_point(aes(colour = z), alpha = 0.1)
 ggplot(norm, aes(x, y)) +
 geom_point(aes(colour = z), alpha = 0.1) +
 guides(colour = guide_legend(override.aes = list(alpha = 1)))
+
+#Posición y justificación
+df <- data.frame(x = 1:3, y = 1:3, z = c("a", "b", "c")) 
+base <- ggplot(df, aes(x, y)) +
+geom_point(aes(colour = z), size = 3) + xlab(NULL) +
+ylab(NULL)
+
+base + theme(legend.position = "right") # the default
+base + theme(legend.position = "bottom")
+base + theme(legend.position = "none")
+
+#También se puede colocar en tu gráfico con suficiente espacio
+ase <- ggplot(df, aes(x, y)) + geom_point(aes(colour = z), size = 3)
+base + theme(legend.position = c(0, 1), legend.justification = c(0, 1))
+base + theme(legend.position = c(0.5, 0.5), legend.justification = c(0.5, 0.5)) base + theme(legend.position = c(1, 0), legend.justification = c(1, 0))
+
+#Para las guías
+df <- data.frame(x = 1, y = 1:3, z = 1:3)
+base <- ggplot(df, aes(x, y)) + geom_raster(aes(fill = z)) base
+base + scale_fill_continuous(guide = guide_legend())
+base + guides(fill = guide_legend())
+
+#Se puede mover según filas o columnas
+df <- data.frame(x = 1, y = 1:4, z = letters[1:4])
+# Base plot
+p <- ggplot(df, aes(x, y)) + geom_raster(aes(fill = z)) p
+p + guides(fill = guide_legend(ncol = 2))
+p + guides(fill = guide_legend(ncol = 2, byrow = TRUE))
+
+#Cambiar el color de la guía 
+
+df <- data.frame(x = 1, y = 1:4, z = 4:1)
+p <- ggplot(df, aes(x, y)) + geom_tile(aes(fill = z))
+p
+p + guides(fill = guide_colorbar(reverse = TRUE))
+p + guides(fill = guide_colorbar(barheight = unit(4, "cm")))
+
+
+```
+Posición en el facetting
+```R
+#Facet_wrap
+base <- ggplot(mpg2, aes(displ, hwy)) + geom_blank() +
+xlab(NULL) +
+ylab(NULL)
+base + facet_wrap( ̃class, ncol = 3)
+base + facet_wrap( ̃class, ncol = 3, as.table = FALSE)
+base + facet_wrap( ̃class, nrow = 3)
+base + facet_wrap( ̃class, nrow = 3, dir = "v")
+
+#Facet_grid
+base + facet_grid(.  ̃ cyl)
+base + facet_grid(drv  ̃ .)
+base + facet_grid(drv  ̃ cyl)
+```
+
+
+Temas
+```R
+base <- ggplot(mpg, aes(cty, hwy, color = factor(cyl))) + geom_jitter() +
+geom_abline(colour = "grey50", size = 2)
+base
+
+labelled <- base + labs(
+x = "City mileage/gallon",
+y = "Highway mileage/gallon",
+colour = "Cylinders",
+title = "Highway and city mileage are highly correlated"
+) +
+scale_colour_brewer(type = "seq", palette = "Spectral") 
+labelled
+
+#Estiticemos
+styled <- labelled +
+  theme_bw() +
+  theme(
+plot.title = element_text(face = "bold", size = 12),
+legend.background = element_rect(fill = "white", size = 4, colour = "white"), legend.justification = c(0, 1),
+legend.position = c(0, 1),
+axis.ticks = element_line(colour = "grey70", size = 0.2),
+panel.grid.major = element_line(colour = "grey70", size = 0.2), panel.grid.minor = element_blank()
+) 
+styled
+
+#Temas completos
+df <- data.frame(x = 1:3, y = 1:3)
+base <- ggplot(df, aes(x, y)) + geom_point()
+base + theme_grey() + ggtitle("theme_grey()")
+base + theme_bw() + ggtitle("theme_bw()")
+base + theme_linedraw() + ggtitle("theme_linedraw()")
+base + theme_light() + ggtitle("theme_light()")
+base + theme_dark() + ggtitle("theme_dark()")
+base + theme_minimal() + ggtitle("theme_minimal()")
+base + theme_classic() + ggtitle("theme_classic()") 
+base + theme_void() + ggtitle("theme_void()")
+
 ```
 
 
