@@ -492,7 +492,7 @@ lineal
 
 
 ```
-Etiquetas y Anotaciones 
+Etiquetas  
 
 ```R
 #family
@@ -513,10 +513,263 @@ ggplot(df, aes(x, y)) +
 geom_text(aes(label = text)) ggplot(df, aes(x, y)) +
 geom_text(aes(label = text), vjust = "inward", hjust = "inward")
 
-#
+# parámetro nudge
+df <- data.frame(trt = c("a", "b", "c"), resp = c(1.2, 3.4, 2.5)) ggplot(df, aes(resp, trt)) +
+geom_point() +
+geom_text(aes(label = paste0("(", resp, ")")), nudge_y = -0.25) + xlim(1, 3.6)
+
+# parámetro check_overlap 
+ggplot(mpg, aes(displ, hwy)) + geom_text(aes(label = model)) + xlim(1, 8)
+ggplot(mpg, aes(displ, hwy)) +
+geom_text(aes(label = model), check_overlap = TRUE) + xlim(1, 8)
+
+#variación: geom_label
+abel <- data.frame(
+waiting = c(55, 80),
+eruptions = c(2, 4.3),
+label = c("peak one", "peak two")
+)
+ggplot(faithfuld, aes(waiting, eruptions)) + geom_tile(aes(fill = density)) + geom_label(data = label, aes(label = label))
+
+```
+Anotaciones
+```R
+
+ggplot(economics, aes(date, unemploy)) + geom_line()
+
+#Agrega anotación para señalar el presidente y color para el partido en el poder
+presidential <- subset(presidential, start > economics$date[1])
+ggplot(economics) + geom_rect(
+aes(xmin = start, xmax = end, fill = party), ymin = -Inf, ymax = Inf, alpha = 0.2, #Se usan -inf e inf como posiciones, se refiere a los límites del gáfico
+data = presidential
+)+ geom_vline(
+aes(xintercept = as.numeric(start)), data = presidential,
+colour = "grey50", alpha = 0.5
+)+ geom_text(
+aes(x = start, y = 2500, label = name), data = presidential,
+size = 3, vjust = 0, hjust = 0, nudge_x = 50 )+
+geom_line(aes(date, unemploy)) + scale_fill_manual(values = c("blue", "red"))
+
+#o podemos agregar una sola anotación
+yrng <- range(economics$unemploy)
+xrng <- range(economics$date)
+caption <- paste(strwrap("Indices de desempleo en EUA han variado bastante con los años", 40), collapse = "\n")
+ggplot(economics, aes(date, unemploy)) + geom_line() +
+geom_text(
+aes(x, y, label = caption),
+data = data.frame(x = xrng[1], y = yrng[2], caption = caption), hjust = 0, vjust = 1, size = 4
+)
+#es más fácil usar la función annotate() para crear ese data frame
+ggplot(economics, aes(date, unemploy)) +
+geom_line() +
+annotate("text", x = xrng[1], y = yrng[2], label = caption,
+hjust = 0, vjust = 1, size = 4 )
+```
+
+Sistemas de coordenadas
+Lineales
+```R
+base <- ggplot(mpg, aes(displ, hwy)) + geom_point() +
+geom_smooth()
+
+# Dataset completo
+base
+# Escalando a 5--7 elimina datos fuera de rango
+base + scale_x_continuous(limits = c(5, 7))
+# Zooming a 5--7 mantiene todos los datos pero solo muestra algunos de ellos
+base + coord_cartesian(xlim = c(5, 7))
+
 
 ```
 
+No Lineales
+```R
+rect <- data.frame(x = 50, y = 50)
+line <- data.frame(x = c(1, 200), y = c(100, 1)) 
+base <- ggplot(mapping = aes(x, y)) +
+
+geom_tile(data = rect, aes(width = 50, height = 50)) + geom_line(data = line) +
+xlab(NULL) + ylab(NULL)
+
+base
+base + coord_polar("x") 
+base + coord_polar("y")
+base + coord_flip()
+base + coord_trans(y = "log10") 
+base + coord_fixed()
+```
+
+```R
+base <- ggplot(mtcars, aes(factor(1), fill = factor(cyl))) + geom_bar(width = 1) +
+theme(legend.position = "none") + scale_x_discrete(NULL, expand = c(0, 0)) + scale_y_continuous(NULL, expand = c(0, 0))
+
+# Gráfico de barras apiladas
+base
+# gráfico de pastel
+base + coord_polar(theta = "y") 
+# Gráfico bullseye 
+base + coord_polar()
+
+```
+
+ "trazar" ("mapear") estéticas (aes) por capa 
+
+```R
+ggplot(mpg, aes(displ, hwy, colour = class)) + geom_point() +
+geom_smooth(method = "lm", se = FALSE) + theme(legend.position = "none")
+
+ggplot(mpg, aes(displ, hwy)) + geom_point(aes(colour = class)) + geom_smooth(method = "lm", se = FALSE) + theme(legend.position = "none")
+```
+establecer y mapear
+```R
+#Si se quiere escapar del valor por defecto se coloca fuera del aes
+ggplot(mpg, aes(cty, hwy)) + geom_point(colour = "darkblue")
+
+#si se quiere que la apariencia dependa de una variable se coloca dentro del aes
+ggplot(mpg, aes(cty, hwy)) + geom_point(aes(colour = "darkblue"))
+
+
+#Es de utilidad si despliegas múltiples capas con parámetros variables
+ggplot(mpg, aes(displ, hwy)) +
+geom_point() +
+geom_smooth(aes(colour = "loess"), method = "loess", se = FALSE) + 
+geom_smooth(aes(colour = "lm"), method = "lm", se = FALSE) + labs(colour = "Method")
+```
+
+Formas de usar la función stat
+```R
+# Agregar el stat y prescindir del geom por defecto
+ggplot(mpg, aes(trans, cty)) +
+geom_point() +
+stat_summary(geom = "point", fun.y = "mean", colour = "red", size = 4)
+
+# Agregar el geom y prescindir del stat por defecto
+ggplot(mpg, aes(trans, cty)) +
+geom_point() +
+geom_point(stat = "summary", fun.y = "mean", colour = "red", size = 4)
+```
+
+Ajustes de posición
+```R
+dplot <- ggplot(diamonds, aes(color, fill = cut)) + xlab(NULL) + ylab(NULL) + theme(legend.position = "none")
+
+# la posición stack es por defecto para geom_bar
+dplot + geom_bar()
+dplot + geom_bar(position = "fill")
+dplot + geom_bar(position = "dodge")
+
+```
+Modificando escalas: Se pueden usar varias juntas 
+```R
+ggplot(mpg, aes(displ, hwy)) + geom_point(aes(colour = class)) + scale_x_sqrt() + scale_colour_brewer()
+
+
+```
+Ejes y Leyendas
+```R
+#Títulos
+df <- data.frame(x = 1:2, y = 1, z = "a")
+p <- ggplot(df, aes(x, y)) + geom_point()
+p + scale_x_continuous("X axis")
+p + scale_x_continuous(quote(a + mathematical ˆ expression))
+
+#se cuenta con tres auxiliares para las etiquetas xlab, ylab y labs
+p <- ggplot(df, aes(x, y)) + geom_point(aes(colour = z)) 
+
+p + xlab("X axis") + ylab("Y axis")
+p + labs(x = "X axis", y = "Y axis", colour = "Colour\nlegend")
+
+#También podemos omitirlo
+p <- ggplot(df, aes(x, y)) + geom_point() +
+theme(plot.background = element_rect(colour = "grey50"))
+
+p + labs(x="", y="")
+p + labs(x = NULL, y = NULL)
+
+#Para modificar los breaks
+df <- data.frame(x = c(1, 3, 5) * 1000, y = 1) 
+axs <- ggplot(df, aes(x, y)) +
+geom_point() + labs(x = NULL, y = NULL) 
+
+axs
+
+axs + scale_x_continuous(breaks = c(2000, 4000))
+axs + scale_x_continuous(breaks = c(2000, 4000), labels = c("2k", "4k"))
+
+#Para reetiquetar labels categoricos se pueden usar vectores
+
+df2 <- data.frame(x = 1:3, y = c("a", "b", "c")) 
+ggplot(df2, aes(x, y)) + geom_point() 
+ggplot(df2, aes(x, y)) +
+geom_point() +scale_y_discrete(labels = c(a = "apple", b = "banana", c = "carrot"))
+
+#suprimir breaks
+axs + scale_x_continuous(breaks = NULL)
+axs + scale_x_continuous(labels = NULL)
+
+#Ajustar breaks
+df <- data.frame(x = c(2, 3, 5, 10, 200, 3000), y = 1) 
+ggplot(df, aes(x, y)) +
+geom_point() + scale_x_log10()
+
+mb <- as.numeric(1:10 %o% 10^(0:4)) # Se usa %o% para generar la tabla de multiplicación rápida y transformar
+ggplot(df, aes(x, y)) +
+geom_point() + scale_x_log10(minor_breaks = log10(mb))
+
+
+```
+Ejercicio
+```R
+ex <- ggplot(mpg, aes(displ, hwy)) + geom_point()
+#ex + scale_y_continuous(???(Highway (??(??, ??)))) + scale_x_continuous("Displacement", breaks = c(###), labels = c(###))
+```
+Leyendas
+```R
+df <- data.frame(x = 1:3, y = 1, z = c("a", "b", "c"))
+
+ggplot(df, aes(y, y)) +
+geom_point(size = 4, colour = "grey20") + geom_point(aes(colour = z), size = 2)
+
+ggplot(df, aes(y, y)) +
+geom_point(size = 4, colour = "grey20", show.legend = TRUE) + geom_point(aes(colour = z), size = 2)
+
+
+
+#Diferente color de leyenda a geom
+norm <- data.frame(x = rnorm(1000), y = rnorm(1000)) 
+norm$z <- cut(norm$x, 3, labels = c("a", "b", "c")) 
+
+ggplot(norm, aes(x, y)) +
+geom_point(aes(colour = z), alpha = 0.1) 
+
+ggplot(norm, aes(x, y)) +
+geom_point(aes(colour = z), alpha = 0.1) +
+guides(colour = guide_legend(override.aes = list(alpha = 1)))
+```
+
+
+Agregando la ecuación de la regresión
+
+```R
+lm_eqn = function(m) {
+
+  l <- list(a = format(coef(m)[1], digits = 2),
+      b = format(abs(coef(m)[2]), digits = 2),
+      r2 = format(summary(m)$r.squared, digits = 3));
+
+  if (coef(m)[2] >= 0)  {
+    eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,l)
+  } else {
+    eq <- substitute(italic(y) == a - b %.% italic(x)*","~~italic(r)^2~"="~r2,l)    
+  }
+
+  as.character(as.expression(eq));                 
+}
+
+ggplot(ccg, aes(g.lt, abs, label= abs)) + geom_point() 
++ geom_text(aes(x = 0.8, y = .5, label = m_eqn(lm(abs ~ g.lt, ccg))), parse = TRUE) 
++ geom_smooth(method = "lm") 
+```
 
 
 Formato amplio (usando solo ggplot2)
@@ -538,6 +791,8 @@ Tomando todo el potencial del tidyverse
 gather(mtcars,value = "Medida",key = "Tipo",mpg,qsec) %>% ggplot( aes(x=wt,y=Medida,color=Tipo)) + geom_point()
 ```
 
+¡Una página muy útil!
 
+[Stack Overflow](https://stackoverflow.com/)
 
 
